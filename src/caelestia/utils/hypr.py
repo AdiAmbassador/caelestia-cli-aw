@@ -31,13 +31,25 @@ def is_lua_config() -> bool:
     global _lua_config_cache
     if _lua_config_cache is not None:
         return _lua_config_cache
+        # creates persistent info cache
+    from pathlib import Path
+    cache_file = Path("/tmp/caelestia_lua_cache.txt")
+    if cache_file.exists():
+        try:
+            _lua_config_cache = cache_file.read_text().strip() == "True"
+            return _lua_config_cache
+        except Exception:
+            pass
+            
     try:
         result = message("systeminfo", is_json=False)
         for line in result.splitlines():
             if "configProvider:" in line:
                 _lua_config_cache = "lua" in line.lower()
+                cache_file.write_text(str(_lua_config_cache))
                 return _lua_config_cache
         _lua_config_cache = False
+        cache_file.write_text("False")
         return False
     except Exception:
         _lua_config_cache = False
