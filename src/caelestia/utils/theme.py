@@ -398,13 +398,20 @@ def apply_colours(colours: dict[str, str], mode: str) -> None:
     # --- Asus TUF Keyboard Sync ---
     try:
         primary_hex = colours.get("primary", "ffffff")
-        subprocess.run(
-            ["asusctl", "aura", "effect", "static", "-c", primary_hex],
-            stderr=subprocess.DEVNULL,
-            stdout=subprocess.DEVNULL
-        )
-    except Exception:
-        pass
+        # Strip # just in case, though usually not present
+        primary_hex = primary_hex.lstrip("#")
+        
+        # Use Popen to run asynchronously (prevents lag) and log output to debug
+        with open("/tmp/asusctl_debug.log", "w") as dbg_log:
+            subprocess.Popen(
+                ["/usr/bin/asusctl", "aura", "effect", "static", "-c", primary_hex],
+                stdout=dbg_log,
+                stderr=dbg_log,
+                start_new_session=True
+            )
+    except Exception as e:
+        with open("/tmp/asusctl_debug.log", "a") as dbg_log:
+            dbg_log.write(f"Python exception: {str(e)}\n")
     # ------------------------------
 
     # file-based lock to prevent concurrent theme changes
