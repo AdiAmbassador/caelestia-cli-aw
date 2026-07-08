@@ -1,18 +1,28 @@
 import hashlib
 import json
 import os
+import subprocess
 import tempfile
 from pathlib import Path
 from typing import Any
 
 from caelestia.utils.io import warn
 
+# Dynamically resolve XDG user directories to support localized system folders
+def _get_xdg_dir(name: str, fallback: str) -> Path:
+    try:
+        return Path(subprocess.check_output(["xdg-user-dir", name], text=True).strip())
+    except Exception:
+        return Path.home() / fallback
+
 config_dir: Path = Path(os.getenv("XDG_CONFIG_HOME", Path.home() / ".config"))
 data_dir: Path = Path(os.getenv("XDG_DATA_HOME", Path.home() / ".local/share"))
 state_dir: Path = Path(os.getenv("XDG_STATE_HOME", Path.home() / ".local/state"))
 cache_dir: Path = Path(os.getenv("XDG_CACHE_HOME", Path.home() / ".cache"))
-pictures_dir: Path = Path(os.getenv("XDG_PICTURES_DIR", Path.home() / "Pictures"))
-videos_dir: Path = Path(os.getenv("XDG_VIDEOS_DIR", Path.home() / "Videos"))
+
+# Use the dynamic XDG loader instead of hardcoded English folder names
+pictures_dir: Path = _get_xdg_dir("PICTURES", "Pictures")
+videos_dir: Path = _get_xdg_dir("VIDEOS", "Videos")
 
 c_config_dir: Path = config_dir / "caelestia"
 c_data_dir: Path = data_dir / "caelestia"
