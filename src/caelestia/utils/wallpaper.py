@@ -258,7 +258,7 @@ def extract_all_video_thumbs() -> None:
             if thumb_path.exists():
                 try:
                     with Image.open(thumb_path) as t_img:
-                        if t_img.width >= 1280:  # If it's already 720p, skip it
+                        if t_img.height >= 500:
                             should_extract = False
                 except Exception:
                     pass
